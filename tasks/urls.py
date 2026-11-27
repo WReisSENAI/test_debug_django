@@ -23,4 +23,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path("", listar_tarefas, name="listar_tarefas"),
     path("create", criar_tarefa, name="criar_tarefa"),
+    path("update/<int:id>", atualizar_tarefa, name="atualizar_tarefa")
 ]

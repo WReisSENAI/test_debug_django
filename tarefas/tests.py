@@ -24,19 +24,23 @@ class TarefaTestCase(SetupTestCase):
         
         self.assertEqual(self.tarefa.categoria.nome,"Categoria Teste")
 
-        #  observe que é possivel criar duas Formas de Teste para um mesmo método
-        # self.assertEqual(self.tarefa.concluida,False) 
-        self.assertFalse(self.tarefa.concluida)    
+        # #  observe que é possivel criar duas Formas de Teste para um mesmo método
+        # # self.assertEqual(self.tarefa.concluida,False) 
+        # self.assertFalse(self.tarefa.concluida)    
 
-        # Executa a regra de negócio do Model
+
+    def test_marcar_como_concluida(self):
+        # Cobre as linhas 19 e 20
         self.tarefa.marcar_como_concluida()
-
-        # Valida se o estado foi atualizado
+        
+        # Recarrega do banco para garantir que o self.save() funcionou
+        self.tarefa.refresh_from_db()
         self.assertTrue(self.tarefa.concluida)
 
-        # self.assertEqual(self.tarefa.is_valid(), True)
+    def test_is_valid(self):
+        # Cobre a linha 23
         self.assertTrue(self.tarefa.is_valid())
- 
+    
 
 class ViewsTestCase(SetupTestCase):
 
@@ -81,6 +85,31 @@ class ViewsTestCase(SetupTestCase):
 
         self.tarefa_id = dados["tarefas"][0]["id"]
 
+    def test_view_atualizar_tarefa_retorna_200(self):
+        """Simula a atualização de uma Tarefa e valida o status HTTP e o JSON."""
+        # 1. Passa o ID da tarefa existente na URL
+        url = reverse("atualizar_tarefa", args=[self.tarefa.id])
 
+        dados_envio = {
+            "titulo": "Atualizar Titulo Estudar testes no Django",
+            "concluida": True,
+        }
 
-        
+        # Se sua rota aceitar PUT/PATCH, troque self.client.post por self.client.put
+        resposta = self.client.post(
+            url, data=json.dumps(dados_envio), content_type="application/json"
+        )
+
+        # 2. Valida o código de status HTTP
+        self.assertEqual(resposta.status_code, 200)
+
+        # 3. Valida os campos retornados diretamente no dicionário
+        dados = resposta.json()
+        self.assertEqual(dados["id"], self.tarefa.id)
+        self.assertEqual(dados["titulo"], "Atualizar Titulo Estudar testes no Django")
+        self.assertTrue(dados["concluida"])
+
+        # 4. Garante que foi atualizado no banco de dados
+        self.tarefa.refresh_from_db()
+        self.assertEqual(self.tarefa.titulo, "Atualizar Titulo Estudar testes no Django")
+        self.assertTrue(self.tarefa.concluida)

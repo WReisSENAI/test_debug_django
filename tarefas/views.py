@@ -29,7 +29,7 @@ def criar_tarefa(request):
     # Retorna um dicionário com a chave "tarefas"
     return JsonResponse({"tarefas": tarefas}, status=200)
 
-def atualizar_tarefa(request,id):
+def atualizar_tarefa(request, id):
     dados = json.loads(request.body)
     tarefa = Tarefa.objects.get(id=id)
     tarefa.titulo = dados["titulo"]
